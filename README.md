@@ -146,6 +146,13 @@ Returns a promise with the string ID of the upload.  Will reject if there is a c
 |Name|Type|Required|Default|Description|Example|
 |---|---|---|---|---|---|
 |`url`|string|Required||URL to upload to|`https://myservice.com/path/to/post`|
+|`followRedirects`|boolean|Optional|true|(Android only) Configures the client to follow redirects.||
+|`followSslRedirects`|boolean|Optional|true|(Android only) Configures the client to follow redirects from HTTPS to HTTP and from HTTP to HTTPS||
+|`retryOnConnectionFailure`|boolean|Optional|true|(Android only) Configures the client to retry or not when a connectivity problem is encountered.||
+|`connectTimeout`|number|Optional|15|(Android only) Sets the connect timeout in seconds.||
+|`writeTimeout`|number|Optional|30|(Android only) Sets the write timeout in seconds.||
+|`readTimeout`|number|Optional|30|(Android only) Sets the read timeout in seconds.||
+|`url`|string|Required||URL to upload to|`https://myservice.com/path/to/post`|
 |`path`|string|Required||File path on device|`file://something/coming/from%20the%20device.png`|
 |`type`|'raw' or 'multipart'|Optional|`raw`|Primary upload type.||
 |`method`|string|Optional|`POST`|HTTP method||
