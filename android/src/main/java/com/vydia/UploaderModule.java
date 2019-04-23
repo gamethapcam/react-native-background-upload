@@ -28,6 +28,9 @@ import net.gotev.uploadservice.UploadStatusDelegate;
 import net.gotev.uploadservice.okhttp.OkHttpStack;
 
 import java.io.File;
+import java.util.concurrent.TimeUnit;
+
+import okhttp3.OkHttpClient;
 
 /**
  * Created by stephen on 12/8/16.
@@ -84,6 +87,80 @@ public class UploaderModule extends ReactContextBaseJavaModule {
     }
   }
 
+  private void configureUploadServiceHTTPStack(final ReadableMap options, final Promise promise) {
+    boolean followRedirects = true;
+    boolean followSslRedirects = true;
+    boolean retryOnConnectionFailure = true;
+    int connectTimeout = 15;
+    int writeTimeout = 30;
+    int readTimeout = 30;
+    //TODO: make 'cache' customizable
+
+    if (options.hasKey("followRedirects")) {
+      if (options.getType("followRedirects") != ReadableType.Boolean) {
+        promise.reject(new IllegalArgumentException("followRedirects must be a boolean."));
+        return;
+      }
+
+      followRedirects = options.getBoolean("followRedirects");
+    }
+
+    if (options.hasKey("followSslRedirects")) {
+      if (options.getType("followSslRedirects") != ReadableType.Boolean) {
+        promise.reject(new IllegalArgumentException("followSslRedirects must be a boolean."));
+        return;
+      }
+
+      followSslRedirects = options.getBoolean("followSslRedirects");
+    }
+
+    if (options.hasKey("retryOnConnectionFailure")) {
+      if (options.getType("retryOnConnectionFailure") != ReadableType.Boolean) {
+        promise.reject(new IllegalArgumentException("retryOnConnectionFailure must be a boolean."));
+        return;
+      }
+
+      retryOnConnectionFailure = options.getBoolean("retryOnConnectionFailure");
+    }
+
+    if (options.hasKey("connectTimeout")) {
+      if (options.getType("connectTimeout") != ReadableType.Number) {
+        promise.reject(new IllegalArgumentException("connectTimeout must be a number."));
+        return;
+      }
+
+      connectTimeout = options.getInt("connectTimeout");
+    }
+
+    if (options.hasKey("writeTimeout")) {
+      if (options.getType("writeTimeout") != ReadableType.Number) {
+        promise.reject(new IllegalArgumentException("writeTimeout must be a number."));
+        return;
+      }
+
+      writeTimeout = options.getInt("writeTimeout");
+    }
+
+    if (options.hasKey("readTimeout")) {
+      if (options.getType("readTimeout") != ReadableType.Number) {
+        promise.reject(new IllegalArgumentException("readTimeout must be a number."));
+        return;
+      }
+
+      readTimeout = options.getInt("readTimeout");
+    }
+
+    UploadService.HTTP_STACK = new OkHttpStack(new OkHttpClient().newBuilder()
+            .followRedirects(followRedirects)
+            .followSslRedirects(followSslRedirects)
+            .retryOnConnectionFailure(retryOnConnectionFailure)
+            .connectTimeout(connectTimeout, TimeUnit.SECONDS)
+            .writeTimeout(writeTimeout, TimeUnit.SECONDS)
+            .readTimeout(readTimeout, TimeUnit.SECONDS)
+            .cache(null)
+            .build());
+  }
+
   /*
    * Starts a file upload.
    * Returns a promise with the string ID of the upload.
@@ -110,6 +187,8 @@ public class UploaderModule extends ReactContextBaseJavaModule {
       promise.reject(new IllegalArgumentException("notification must be a hash."));
       return;
     }
+
+    configureUploadServiceHTTPStack(options, promise);
 
     String requestType = "raw";
 
